@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { Plus, ChevronLeft } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import DataTable from "react-data-table-component";
 import "./AppointmentManagement.css";
 
-const AppointmentRegistration = ({ addAppointment }) => {
+const AppointmentManagement = () => {
   const [appointments, setAppointments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch appointments from the API
   useEffect(() => {
@@ -42,8 +43,16 @@ const AppointmentRegistration = ({ addAppointment }) => {
   const columns = [
     { name: "Doctor", selector: (row) => row.doctorName, sortable: true },
     { name: "Patient", selector: (row) => row.patientNumber, sortable: true },
-    { name: "Date", selector: (row) => row.date, sortable: true },
-    { name: "Time", selector: (row) => row.time, sortable: true },
+    {
+      name: "Date",
+      selector: (row) => new Date(row.date).toLocaleDateString(), // Format date
+      sortable: true,
+    },
+    {
+      name: "Time",
+      selector: (row) => new Date(`1970-01-01T${row.time}`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // Format time
+      sortable: true,
+    },
     {
       name: "Actions",
       cell: (row) => (
@@ -56,6 +65,12 @@ const AppointmentRegistration = ({ addAppointment }) => {
       ),
     },
   ];
+
+  // Filter appointments based on search term
+  const filteredAppointments = appointments.filter(appointment =>
+    appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    appointment.patientNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
@@ -88,13 +103,17 @@ const AppointmentRegistration = ({ addAppointment }) => {
               type="text"
               placeholder="Search appointments..." 
               className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)} // Update search term
             />
           </div>
           <div className="table-wrapper">
             <DataTable
               columns={columns}
-              data={appointments}
+              data={filteredAppointments} // Use filtered appointments
               pagination
+              highlightOnHover
+              pointerOnHover
             />
           </div>
         </div>
@@ -107,4 +126,4 @@ const AppointmentRegistration = ({ addAppointment }) => {
   );
 };
 
-export default AppointmentRegistration;
+export default AppointmentManagement;

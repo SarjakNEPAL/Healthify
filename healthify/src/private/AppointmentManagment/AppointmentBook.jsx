@@ -1,16 +1,52 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios"; // Import Axios
 import "./AppointmentManagement.css";
 
 const AppointmentRegistration = ({ addAppointment }) => {
   const { register, handleSubmit, reset } = useForm();
+  const [errorMessage, setErrorMessage] = useState(""); // State for error messages
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    addAppointment(data); // Update the appointment list
-    reset(); // Reset form after submission
-    navigate("/appointment-management"); // Redirect to appointment management page
+  const onSubmit = async (data) => {
+    try {
+      // Get the token from local storage
+      const token = localStorage.getItem("token");
+
+      // Prepare the data according to the model
+      const appointmentData = {
+        patientNumber: data.patient, // Assuming 'patient' corresponds to 'patientNumber'
+        doctorName: data.doctor, // Assuming 'doctor' corresponds to 'doctorName'
+        date: data.date,
+        time: data.time,
+      };
+
+      // Make an API call to register the appointment
+      const response = await axios.post(
+        "http://localhost:5000/api/appointment/", // Replace with your API endpoint
+        appointmentData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+          },
+        }
+      );
+
+      // Assuming the response contains the newly created appointment
+      addAppointment(response.data); // Update the appointment list with the new appointment
+      alert("Appointment registered successfully!"); // Success alert
+      reset(); // Reset form after submission
+      navigate("/appointment-management"); // Redirect to appointment management page
+    } catch (error) {
+      console.error("Error registering appointment:", error);
+      // Capture the error message from the response
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrorMessage(error.response.data.message); // Set the error message
+      } else {
+        setErrorMessage("Failed to register appointment. Please try again."); // Generic error message
+      }
+    }
   };
 
   return (
@@ -39,8 +75,8 @@ const AppointmentRegistration = ({ addAppointment }) => {
                 <input {...register("doctor", { required: "Doctor is required" })} type="text" />
               </div>
               <div className="form-group">
-                <label>Patient</label>
-                <input {...register("patient", { required: "Patient is required" })} type="text" />
+                <label>Patient Number</label>
+                <input {...register("patient", { required: "Patient number is required" })} type="text" />
               </div>
               <div className="form-group">
                 <label>Date</label>
@@ -50,6 +86,7 @@ const AppointmentRegistration = ({ addAppointment }) => {
                 <label>Time</label>
                 <input {...register("time", { required: "Time is required" })} type="time" />
               </div>
+              {errorMessage && <div className="error-message">{errorMessage}</div>} {/* Display error message */}
               <div className="form-actions">
                 <button type="submit" className="submit-button">Register Appointment</button>
               </div>
