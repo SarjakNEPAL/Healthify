@@ -1,5 +1,5 @@
-// controllers/staffController.js
 const Staff = require('../models/Staff');
+const { Op } = require('sequelize'); // Assuming you are using Sequelize ORM
 
 exports.createStaff = async (req, res) => {
     const { name, phone, branch } = req.body;
@@ -26,6 +26,23 @@ exports.deleteStaff = async (req, res) => {
     try {
         await Staff.destroy({ where: { id } });
         res.json({ message: 'Staff deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.searchStaffByPhone = async (req, res) => {
+    const { phone } = req.params;
+
+    try {
+        const staffs = await Staff.findAll({
+            where: {
+                phone: {
+                    [Op.like]: `%${phone}%`
+                }
+            }
+        });
+        res.json(staffs);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
