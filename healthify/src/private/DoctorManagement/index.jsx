@@ -1,17 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { Link } from "react-router-dom";
 import { Search, Plus } from 'lucide-react';
+import axios from 'axios';
 import "./DoctorManagement.css";
 
 const DoctorMgmt = () => {
-  const [doctors, setDoctors] = useState([
-    { id: 1, name: "Dr. Smith", specialization: "Cardiology" },
-    { id: 2, name: "Dr. Johnson", specialization: "Neurology" },
-  ]);
+  const [doctors, setDoctors] = useState([]);
+  const [searchId, setSearchId] = useState('');
+
+  // Function to get the token from local storage
+  const getToken = () => {
+    return localStorage.getItem('token');
+  };
+
+  useEffect(() => {
+    // Fetch all doctors with the token
+    const token = getToken();
+    axios.get('http://localhost:5000/api/doctor', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        setDoctors(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the doctors!', error);
+      });
+  }, []);
 
   const deleteDoctor = (id) => {
-    setDoctors(doctors.filter((doc) => doc.id !== id));
+    const token = getToken();
+    axios.delete(`http://localhost:5000/api/doctor/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        setDoctors(doctors.filter((doc) => doc.id !== id));
+      })
+      .catch(error => {
+        console.error('There was an error deleting the doctor!', error);
+      });
+  };
+
+  const handleSearch = () => {
+    const token = getToken();
+    if (searchId.trim() === '') {
+      // Fetch all doctors if search input is empty
+      axios.get('http://localhost:5000/api/doctor', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          setDoctors(response.data);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the doctors!', error);
+        });
+    } else {
+      // Fetch doctor by ID with the token
+      axios.get(`http://localhost:5000/api/doctor/${searchId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          setDoctors([response.data]);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the doctor by ID!', error);
+        });
+    }
   };
 
   const doctorColumns = [
@@ -59,10 +121,12 @@ const DoctorMgmt = () => {
           <div className="search-bar">
             <input 
               type="text"
-              placeholder="Search doctors..." 
+              placeholder="Search doctors by ID..." 
               className="search-input"
+              value={searchId}
+              onChange={e => setSearchId(e.target.value)}
             />
-            <Search className="search-icon" size={20} />
+            <Search className="search-icon" size={20} onClick={handleSearch} />
           </div>
           <div className="table-wrapper">
             <DataTable

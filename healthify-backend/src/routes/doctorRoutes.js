@@ -1,10 +1,11 @@
 // routes/doctorRoutes.js
 const express = require('express');
-const { createDoctor, getDoctors, deleteDoctor } = require('../controllers/doctorController');
+const doctorController = require('../controllers/doctorController');
 const router = express.Router();
 
-router.post('/', createDoctor); // Create a doctor
-router.get('/', getDoctors); // Get all doctors
-router.delete('/:id', deleteDoctor); // Delete a doctor by ID
+router.post('/', doctorController.createDoctor);
+router.get('/', doctorController.getDoctors);
+router.get('/:name', doctorController.getDoctorByName);  // Add this route
+router.delete('/:id', doctorController.deleteDoctor);
 
 module.exports = router;

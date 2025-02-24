@@ -27,6 +27,21 @@ exports.getDoctors = async (req, res) => {
     }
 };
 
+exports.getDoctorByName = async (req, res) => {
+    const { name } = req.params;
+
+    try {
+        const doctor = await Doctor.findOne({ where: { name } });
+        if (doctor) {
+            res.json(doctor);
+        } else {
+            res.status(404).json({ message: 'Doctor not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.deleteDoctor = async (req, res) => {
     const { id } = req.params;
     try {

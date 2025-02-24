@@ -1,16 +1,28 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./DoctorManagement.css";
 
-const DoctorRegistration = ({ addDoctor }) => {
+const DoctorRegistration = () => {
   const { register, handleSubmit, reset } = useForm();
   const navigate = useNavigate();
 
   const onSubmit = (data) => {
-    addDoctor(data); // Update the doctor list
-    reset(); // Reset form after submission
-    navigate("/doctor-management"); // Redirect to doctor management page
+    const token = localStorage.getItem('token'); // Get the token from local storage
+    axios.post('http://localhost:5000/api/doctor', data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        console.log(response.data);
+        reset(); // Reset form after submission
+        navigate("/doctor-management"); // Redirect to doctor management page
+      })
+      .catch(error => {
+        console.error('There was an error creating the doctor!', error);
+      });
   };
 
   return (
