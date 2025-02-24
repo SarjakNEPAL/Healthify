@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Fragment } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -8,6 +8,8 @@ import axios from 'axios';
 import './HospitalRegistration.css';
 
 const HospitalRegistration = () => {
+  const navigate = useNavigate(); 
+
   const schema = yup.object().shape({
     organization: yup.string().required('Organization name is required'),
     email: yup.string().email('Invalid email address').required('Email is required'),
@@ -16,23 +18,38 @@ const HospitalRegistration = () => {
     confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match').required('Confirm Password is required'),
   });
 
+
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
   });
 
+
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/register`, data, {
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'http://localhost:5000/api/auth/register/organization',
+        {
+          name: data.organization, 
+          email: data.email,
+          address: data.address,
+          password: data.password,
         },
-      });
-      console.log('Form Data Submitted:', response.data);
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Registration Successful:', response.data);
       alert('Registration Successful!');
+
       reset();
+      navigate('/login'); 
+
     } catch (error) {
-      console.error('Error registering hospital:', error);
-      alert('Registration failed! Please try again.');
+      console.error('Error registering organization:', error.response?.data || error.message);
+      alert(error.response?.data?.message || 'Registration failed! Please try again.');
     }
   };
 

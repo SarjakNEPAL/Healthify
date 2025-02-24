@@ -1,14 +1,17 @@
 const express = require('express');
-const { createAdmin, getAdmins, deleteAdmin } = require('../controllers/adminController'); // Ensure this path is correct
+const { createOrganization, getOrganizations, deleteOrganization, getOrganizationByEmail } = require('../controllers/organizationController'); // Ensure this path is correct
 const router = express.Router();
 
-// Route to create a new admin
-router.post('/', createAdmin);
+// Route to create a new organization
+router.post('/', createOrganization);
 
-// Route to get all admins
-router.get('/', getAdmins);
+// Route to get all organizations
+router.get('/', getOrganizations);
 
-// Route to delete an admin by ID
-router.delete('/:id', deleteAdmin);
+// Route to get an organization by email
+router.get('/email/:email', getOrganizationByEmail);
+
+// Route to delete an organization by email
+router.delete('/email/:email', deleteOrganization);
 
 module.exports = router;

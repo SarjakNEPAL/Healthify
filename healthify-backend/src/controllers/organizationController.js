@@ -1,4 +1,3 @@
-// src/controllers/organizationController.js
 const Organization = require('../models/Organization'); // Import the Organization model
 
 // Create a new organization
@@ -23,12 +22,28 @@ exports.getOrganizations = async (req, res) => {
     }
 };
 
-// Delete an organization by ID
+// Get an organization by email
+exports.getOrganizationByEmail = async (req, res) => {
+    try {
+        const email = req.params.email;
+        const organization = await Organization.findOne({ where: { email } });
+
+        if (!organization) {
+            return res.status(404).json({ message: 'Organization not found' });
+        }
+
+        res.json(organization);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Delete an organization by email
 exports.deleteOrganization = async (req, res) => {
-    const { id } = req.params;
+    const { email } = req.params;
 
     try {
-        const deletedCount = await Organization.destroy({ where: { id } });
+        const deletedCount = await Organization.destroy({ where: { email } });
         if (deletedCount === 0) {
             return res.status(404).json({ message: 'Organization not found' });
         }

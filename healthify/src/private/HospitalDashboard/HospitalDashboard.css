@@ -103,6 +103,9 @@ main {
   gap: 0.5rem;
 }
 
+.logout-btn{
+  padding-right: 1.5rem;
+}
 .header-buttons .button:hover {
   background-color: var(--dark-teal);
   color: white;

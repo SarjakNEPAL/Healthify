@@ -1,16 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import axios from "axios";
 import "./AdminDashboard.css";
 
 const AdminPanel = () => {
-  const [organizations, setOrganizations] = useState([
-    { id: 1, name: "Healthify Hospital", email: "contact@healthify.com" },
-    { id: 2, name: "Wellness Clinic", email: "info@wellness.com" },
-  ]);
+  const [organizations, setOrganizations] = useState([]);
+  const token = localStorage.getItem('token'); // Get the token from localStorage
 
-  const deleteOrganization = (id) => {
-    setOrganizations(organizations.filter((org) => org.id !== id));
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/organization", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      const data = Array.isArray(response.data) ? response.data.map(org => ({
+        name: org.name,
+        email: org.email
+      })) : [];
+      setOrganizations(data);
+    })
+    .catch(error => {
+      console.error("Error fetching data: ", error);
+    });
+  }, [token]);
+
+  const deleteOrganization = (email) => {
+    axios.delete(`http://localhost:5000/api/organization/email/${email}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(() => {
+      setOrganizations(organizations.filter((org) => org.email !== email));
+    })
+    .catch(error => {
+      console.error("Error deleting organization: ", error);
+    });
   };
 
   const columns = [
@@ -19,10 +46,16 @@ const AdminPanel = () => {
     {
       name: "Actions",
       cell: (row) => (
-        <button onClick={() => deleteOrganization(row.id)} className="delete-btn">Delete</button>
+        <button onClick={() => deleteOrganization(row.email)} className="delete-btn">Delete</button>
       ),
     },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    navigate('/login');
+  };
 
   return (
     <>
@@ -34,17 +67,16 @@ const AdminPanel = () => {
           <h1>Healthify | Admin</h1>
         </Link>
         <div id="trans">
-          <Link to="#" className="logout-btn">LogOut</Link>
+          <Link to="#" className="logout-btn" onClick={handleLogout}>LogOut</Link>
         </div>
       </nav>
-        <div className="admin-container">
-      <DataTable columns={columns} data={organizations} pagination />
-    </div>
-    <footer>
+      <div className="admin-container">
+        <DataTable columns={columns} data={organizations} pagination />
+      </div>
+      <footer>
         <p>&copy; 2024 Web Development Project. By Sarjak Bhandari.</p>
       </footer>
     </>
-
   );
 };
 

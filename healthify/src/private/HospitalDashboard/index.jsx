@@ -9,6 +9,12 @@ import "./HospitalDashboard.css";
 
 const HospitalDashboard = () => {
   const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userType');
+    navigate('/login');
+  }
+
 
   return (
     <>
@@ -20,7 +26,9 @@ const HospitalDashboard = () => {
           <h1>Healthify</h1>
         </Link>
         <div id="trans">
-          <Link to="/login">LogOut</Link>
+        <button onClick={handleLogout} className="logout-btn">
+      Logout
+    </button>
         </div>
       </nav>
       <main>
