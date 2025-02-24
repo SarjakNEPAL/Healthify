@@ -1,16 +1,31 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
 import "./StaffManagement.css";
 
-const StaffRegistration = ({ addStaff }) => {
+const StaffRegistration = () => {
   const { register, handleSubmit, reset } = useForm();
   const navigate = useNavigate();
 
+  const addStaff = async (data) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('http://localhost:5000/api/staff', data, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      reset(); // Reset form after submission
+      navigate("/staff-management"); // Redirect to staff management page
+    } catch (error) {
+      console.error("Failed to add staff member:", error);
+    }
+  };
+
   const onSubmit = (data) => {
     addStaff(data); // Update the staff list
-    reset(); // Reset form after submission
-    navigate("/staff-management"); // Redirect to staff management page
   };
 
   return (
@@ -40,7 +55,7 @@ const StaffRegistration = ({ addStaff }) => {
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
-                <input {...register("phoneNumber", { required: "Phone number is required" })} type="text" />
+                <input {...register("phone", { required: "Phone number is required" })} type="text" />
               </div>
               <div className="form-group">
                 <label>Branch</label>

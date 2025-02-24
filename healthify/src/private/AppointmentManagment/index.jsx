@@ -1,22 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { Plus, ChevronLeft } from 'lucide-react';
 import DataTable from "react-data-table-component";
 import "./AppointmentManagement.css";
 
 const AppointmentRegistration = ({ addAppointment }) => {
-  const [appointments, setAppointments] = useState([
-    { id: 1, doctor: "Dr. Smith", patient: "John Doe", date: "2023-01-01", time: "10:00" },
-    { id: 2, doctor: "Dr. Johnson", patient: "Jane Doe", date: "2023-01-02", time: "11:00" },
-  ]);
+  const [appointments, setAppointments] = useState([]);
+
+  // Fetch appointments from the API
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    axios.get('http://localhost:5000/api/appointment/', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      setAppointments(response.data);
+    })
+    .catch(error => {
+      console.error("There was an error fetching the appointments!", error);
+    });
+  }, []);
 
   const deleteAppointment = (id) => {
-    setAppointments(appointments.filter((app) => app.id !== id));
+    const token = localStorage.getItem('token');
+    axios.delete(`http://localhost:5000/api/appointment/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      setAppointments(appointments.filter((app) => app.id !== id));
+    })
+    .catch(error => {
+      console.error("There was an error deleting the appointment!", error);
+    });
   };
 
   const columns = [
-    { name: "Doctor", selector: (row) => row.doctor, sortable: true },
-    { name: "Patient", selector: (row) => row.patient, sortable: true },
+    { name: "Doctor", selector: (row) => row.doctorName, sortable: true },
+    { name: "Patient", selector: (row) => row.patientNumber, sortable: true },
     { name: "Date", selector: (row) => row.date, sortable: true },
     { name: "Time", selector: (row) => row.time, sortable: true },
     {

@@ -1,21 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
+import axios from 'axios';
 import DataTable from "react-data-table-component";
 import './StaffManagement.css';
 
 const StaffManagement = () => {
-  const [staff, setStaff] = useState([
-    { id: 1, name: "Alice Smith", branch: "Cardiology" },
-    { id: 2, name: "Bob Johnson", branch: "Neurology" },
-  ]);
+  const [staff, setStaff] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const deleteStaff = (id) => {
-    setStaff(staff.filter((member) => member.id !== id));
+  useEffect(() => {
+    fetchStaff();
+  }, []);
+
+  const fetchStaff = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/staff', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setStaff(response.data);
+    } catch (error) {
+      console.error("Failed to fetch staff members:", error);
+    }
+  };
+
+  const deleteStaff = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/staff/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setStaff(staff.filter((member) => member.id !== id));
+    } catch (error) {
+      console.error("Failed to delete staff member:", error);
+    }
+  };
+
+  const searchStaff = async (phone) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:5000/api/staff/${phone}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setStaff(response.data);
+    } catch (error) {
+      console.error("Failed to search staff:", error);
+    }
+  };
+
+  const handleSearchChange = (event) => {
+    const phone = event.target.value;
+    setSearchQuery(phone);
+    if (phone.length > 0) {
+      searchStaff(phone);
+    } else {
+      fetchStaff();
+    }
   };
 
   const columns = [
     { name: "Name", selector: (row) => row.name, sortable: true },
+    { name: "Phone Number", selector: (row) => row.phone, sortable: true },
     { name: "Branch", selector: (row) => row.branch, sortable: true },
     {
       name: "Actions",
@@ -58,8 +110,10 @@ const StaffManagement = () => {
           <div className="search-bar">
             <input 
               type="text"
-              placeholder="Search staff..." 
+              placeholder="Search staff by phone number..." 
               className="search-input"
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
           </div>
           <div className="table-wrapper">
