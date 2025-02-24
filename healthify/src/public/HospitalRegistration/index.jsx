@@ -1,14 +1,39 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
 import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import axios from 'axios';
 import './HospitalRegistration.css';
 
 const HospitalRegistration = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const schema = yup.object().shape({
+    organization: yup.string().required('Organization name is required'),
+    email: yup.string().email('Invalid email address').required('Email is required'),
+    address: yup.string().required('Address is required'),
+    password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+    confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match').required('Confirm Password is required'),
+  });
 
-  const onSubmit = (data) => {
-    console.log("Form Data Submitted:", data);
-    alert("Registration Successful!");
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data) => {
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/auth/register`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('Form Data Submitted:', response.data);
+      alert('Registration Successful!');
+      reset();
+    } catch (error) {
+      console.error('Error registering hospital:', error);
+      alert('Registration failed! Please try again.');
+    }
   };
 
   return (
@@ -17,7 +42,7 @@ const HospitalRegistration = () => {
         <Link to="/" className="logo">
           <img src="./src/img/logo.png" alt="Healthify" />
         </Link>
-        <Link to="/" style={{ color: "aliceblue", textDecoration: "none" }}>
+        <Link to="/" style={{ color: 'aliceblue', textDecoration: 'none' }}>
           <h1>Healthify | Registration</h1>
         </Link>
         <div id="trans">
@@ -37,7 +62,7 @@ const HospitalRegistration = () => {
               <input
                 type="text"
                 id="organization"
-                {...register('organization', { required: "Organization name is required" })}
+                {...register('organization')}
               />
               {errors.organization && <p className="error">{errors.organization.message}</p>}
 
@@ -45,10 +70,7 @@ const HospitalRegistration = () => {
               <input
                 type="email"
                 id="email"
-                {...register('email', {
-                  required: "Email is required",
-                  pattern: { value: /^\S+@\S+$/i, message: "Invalid email address" }
-                })}
+                {...register('email')}
               />
               {errors.email && <p className="error">{errors.email.message}</p>}
 
@@ -56,7 +78,7 @@ const HospitalRegistration = () => {
               <input
                 type="text"
                 id="address"
-                {...register('address', { required: "Address is required" })}
+                {...register('address')}
               />
               {errors.address && <p className="error">{errors.address.message}</p>}
 
@@ -64,7 +86,7 @@ const HospitalRegistration = () => {
               <input
                 type="password"
                 id="password"
-                {...register('password', { required: "Password is required", minLength: { value: 6, message: "Password must be at least 6 characters" } })}
+                {...register('password')}
               />
               {errors.password && <p className="error">{errors.password.message}</p>}
 
@@ -72,7 +94,7 @@ const HospitalRegistration = () => {
               <input
                 type="password"
                 id="confirmPassword"
-                {...register('confirmPassword', { required: "Confirm Password is required" })}
+                {...register('confirmPassword')}
               />
               {errors.confirmPassword && <p className="error">{errors.confirmPassword.message}</p>}
 
