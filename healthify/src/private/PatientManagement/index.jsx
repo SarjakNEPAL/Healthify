@@ -1,26 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   User, Search, Plus, Edit2, Trash2, 
   Phone, Mail, Calendar, ChevronLeft, MapPin 
 } from 'lucide-react';
 import DataTable from 'react-data-table-component';
+import axios from 'axios';
 import './PatientManagement.css';
 
 const PatientManagement = () => {
-  const [patients, setPatients] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      phone: "+1 234-567-8900",
-      email: "john.doe@example.com",
-      disease: "Hypertension",
-      address: "123 Main St, Cityville"
-    }
-  ]);
+  const [patients, setPatients] = useState([]);
+  const [searchPhone, setSearchPhone] = useState('');
 
-  const deletePatient = (id) => {
-    setPatients(patients.filter(patient => patient.id !== id));
+  // Function to get the token from local storage
+  const getToken = () => {
+    return localStorage.getItem('token');
+  };
+
+  useEffect(() => {
+    // Fetch all patients with the token
+    const token = getToken();
+    axios.get('http://localhost:5000/api/patient', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        setPatients(response.data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the patients!', error);
+      });
+  }, []);
+
+  const deletePatient = (phone) => {
+    const token = getToken();
+    axios.delete(`http://localhost:5000/api/patient/phone/${phone}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        setPatients(patients.filter(patient => patient.phone !== phone));
+      })
+      .catch(error => {
+        console.error('There was an error deleting the patient!', error);
+      });
+  };
+
+  const handleSearch = () => {
+    const token = getToken();
+    if (searchPhone.trim() === '') {
+      // Fetch all patients if search input is empty
+      axios.get('http://localhost:5000/api/patient', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          setPatients(response.data);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the patients!', error);
+        });
+    } else {
+      // Fetch patient by phone number with the token
+      axios.get(`http://localhost:5000/api/patient/phone/${searchPhone}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          setPatients([response.data]);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the patient by phone number!', error);
+        });
+    }
   };
 
   const columns = [
@@ -58,7 +114,7 @@ const PatientManagement = () => {
       name: "Actions",
       cell: (row) => (
         <button
-          onClick={() => deletePatient(row.id)}
+          onClick={() => deletePatient(row.phone)}
           className="delete-button"
         >
           Delete
@@ -96,10 +152,12 @@ const PatientManagement = () => {
           <div className="search-bar">
             <input 
               type="text"
-              placeholder="Search patients..." 
+              placeholder="Search patients by phone number..." 
               className="search-input"
+              value={searchPhone}
+              onChange={e => setSearchPhone(e.target.value)}
             />
-            <Search className="search-icon" size={20} />
+            <Search className="search-icon" size={20} onClick={handleSearch} />
           </div>
           <div className="table-wrapper">
             <DataTable

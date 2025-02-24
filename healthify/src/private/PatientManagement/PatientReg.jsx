@@ -7,10 +7,32 @@ const PatientRegistration = ({ addPatient }) => {
   const { register, handleSubmit, reset } = useForm();
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    addPatient(data); // Update the patient list
-    reset(); // Reset form after submission
-    navigate("/patient-management"); // Redirect to patient management page
+  const onSubmit = async (data) => {
+    const token = localStorage.getItem("token"); // Retrieve token from local storage
+
+    try {
+      const response = await fetch("http://localhost:5000/api/patient", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Use the token from local storage
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to register patient");
+      }
+
+      const responseData = await response.json();
+      addPatient(responseData); // Update the patient list
+      alert("Patient registered successfully!");
+      reset(); // Reset form after submission
+      navigate("/patient-management"); // Redirect to patient management page
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to register patient: " + error.message);
+    }
   };
 
   return (
@@ -40,13 +62,13 @@ const PatientRegistration = ({ addPatient }) => {
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
-                <input {...register("age", { required: "Number is required" })} type="number" />
+                <input {...register("phone", { required: "Number is required" })} type="number" />
               </div>
               <div className="form-group">
                 <label>Disease</label>
                 <input {...register("disease", { required: "Disease is required" })} type="text" />
                 <label>Address</label>
-                <input {...register("Address", { required: "Address is required" })} type="text" />
+                <input {...register("address", { required: "Address is required" })} type="text" />
               </div>
               <div className="form-actions">
                 <button type="submit" className="submit-button">Register Patient</button>
