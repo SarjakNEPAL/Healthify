@@ -23,14 +23,14 @@ exports.login = async (req, res) => {
     const admin = await Admin.findOne({ where: { email } });
     if (admin && await bcrypt.compare(password, admin.password)) {
         const token = jwt.sign({ id: admin.id, role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        return res.json({ token });
+        return res.json({ token, userType: 'admin' }); // Include userType in the response
     }
 
     // Check if the user is an organization
     const organization = await Organization.findOne({ where: { email } });
     if (organization && await bcrypt.compare(password, organization.password)) {
         const token = jwt.sign({ id: organization.id, role: 'organization' }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        return res.json({ token });
+        return res.json({ token, userType: 'organization' }); // Include userType in the response
     }
 
     return res.status(401).json({ message: 'Invalid credentials' });
