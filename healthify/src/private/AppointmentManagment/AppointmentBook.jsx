@@ -1,16 +1,33 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./AppointmentManagement.css";
 
 const AppointmentRegistration = ({ addAppointment }) => {
   const { register, handleSubmit, reset } = useForm();
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    addAppointment(data); // Update the appointment list
-    reset(); // Reset form after submission
-    navigate("/appointment-management"); // Redirect to appointment management page
+  const onSubmit = async (data) => {
+    try {
+      // Retrieve the token from local storage
+      const token = localStorage.getItem("token");
+
+      // Make the API request to register the appointment
+      const response = await axios.post("http://localhost:5000/api/appointment", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      addAppointment(response.data); // Update the appointment list with the response data
+      reset(); // Reset form after submission
+      navigate("/appointment-management"); // Redirect to appointment management page
+    } catch (error) {
+      // Handle and display the error
+      console.error("Error registering appointment:", error);
+      alert(`Error registering appointment: ${error.response?.data?.message || error.message}`);
+    }
   };
 
   return (
