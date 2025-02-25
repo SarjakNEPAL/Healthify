@@ -53,11 +53,11 @@ const AppointmentRegistration = ({ addAppointment }) => {
             <form onSubmit={handleSubmit(onSubmit)} className="form">
               <div className="form-group">
                 <label>Doctor</label>
-                <input {...register("doctor", { required: "Doctor is required" })} type="text" />
+                <input {...register("doctorName", { required: "Doctor is required" })} type="text" />
               </div>
               <div className="form-group">
-                <label>Patient</label>
-                <input {...register("patient", { required: "Patient is required" })} type="text" />
+                <label>Patient Number</label>
+                <input {...register("patientNumber", { required: "Patient Numbwe is required" })} type="text" />
               </div>
               <div className="form-group">
                 <label>Date</label>
