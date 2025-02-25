@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { Plus, ChevronLeft } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import DataTable from "react-data-table-component";
 import "./AppointmentManagement.css";
 
@@ -39,10 +39,15 @@ const AppointmentRegistration = ({ addAppointment }) => {
     });
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB'); // Format as dd/mm/yyyy
+  };
+
   const columns = [
     { name: "Doctor", selector: (row) => row.doctorName, sortable: true },
     { name: "Patient", selector: (row) => row.patientNumber, sortable: true },
-    { name: "Date", selector: (row) => row.date, sortable: true },
+    { name: "Date", selector: (row) => formatDate(row.date), sortable: true },
     { name: "Time", selector: (row) => row.time, sortable: true },
     {
       name: "Actions",
